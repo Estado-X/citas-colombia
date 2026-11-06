@@ -33,23 +33,29 @@
 
   // ── Patrones ──────────────────────────────────────────────────────────────────
   var L = 'A-Za-zÁÉÍÓÚÜÑáéíóúüñ';           // letras, para que «STC» no se lea como «C»
-  var ANTES = '(?<![' + L + '0-9])';
+  // Sin «lookbehind» (Safari anterior a 16.4 no lo entiende): el carácter de antes se captura y se descuenta en todas()
+  var ANTES = '(^|[^' + L + '0-9])';
+  var ANTES_L = '(^|[^' + L + '])';
   var GUION = '[-‐‑–—]';
   // «del 10 de mayo de 2006» después del número
   var FECHA = ',?\\s+del?\\s+\\d{1,2}\\s+de\\s+(?:enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|setiembre|octubre|noviembre|diciembre)\\s+(?:del?\\s+)?(\\d{4})';
   var PCSJ = Object.keys(CSJ).sort(function (a, b) { return b.length - a.length; }).join('|');
 
-  // SL1234-2023 · STC 10753-2025 · AP1234 de 2019 · SL1234-23 (raro)
-  var RE_CSJ = new RegExp(ANTES + '(' + PCSJ + ')\\s?(\\d{1,7})\\s?(?:' + GUION + '\\s?|\\s+del?\\s+)(\\d{4}|\\d{2})(?!\\d)', 'g');
+  // SL1234-2023 · STC 10753-2025 · AP1234 de 2019 · SL1234-23 y SP-1234-2020 (raros)
+  var RE_CSJ = new RegExp(ANTES + '(' + PCSJ + ')(\\s?' + GUION + '\\s?|\\s)?(\\d{1,7})\\s?(?:' + GUION + '\\s?|\\s+del?\\s+)(\\d{4}|\\d{2})(?!\\d)', 'g');
   // T-406 de 1992 · T-406/92 · SU214-16 · SU.067/93 · C 355 de 2006 · A-004/09 · T-406 (sin año)
   var RE_CC = new RegExp(ANTES + '(SU|T|C|A)(\\s?' + GUION + '\\s?|\\.\\s?|\\s)?(\\d{1,5})' +
     '(?:\\s?(?:\\/|' + GUION + ')\\s?(\\d{4}|\\d{2})|\\s+del?\\s+(?:año\\s+)?(\\d{4})|' + FECHA + ')?(?![\\d' + L + '])', 'g');
   // Auto 004 de 2009 · auto No. 004/09 · Auto número 092 de 2008
-  var RE_AUTO = new RegExp('(?<![' + L + '])([Aa]uto)\\s+(?:(?:No\\.?|Nro\\.?|n[úu]mero|N\\.?\\s?[°º]|n\\.?\\s?[°º])\\s*)?(\\d{1,5})' +
+  var RE_AUTO = new RegExp(ANTES_L + '([Aa]uto)\\s+(?:(?:No\\.?|Nro\\.?|n[úu]mero|N\\.?\\s?[°º]|n\\.?\\s?[°º])\\s*)?(\\d{1,5})' +
     '(?:\\s?(?:\\/|' + GUION + ')\\s?(\\d{4}|\\d{2})|\\s+del?\\s+(?:año\\s+)?(\\d{4})|' + FECHA + ')(?!\\d)', 'g');
   // Sentencia XY-123 de 2010 con un tipo que no existe (CU, TS, SV…)
-  var RE_OTRO = new RegExp('(?<![' + L + '])(?:[Ss]entencias?|[Aa]utos?|[Ff]allos?|[Pp]rovidencias?)\\s+(?:de\\s+(?:tutela|unificación|constitucionalidad)\\s+)?' +
+  var RE_OTRO = new RegExp(ANTES_L + '(?:[Ss]entencias?|[Aa]utos?|[Ff]allos?|[Pp]rovidencias?)\\s+(?:de\\s+(?:tutela|unificación|constitucionalidad)\\s+)?' +
     '([A-Z]{1,4})\\s?' + GUION + '?\\s?(\\d{1,5})(?:\\s?(?:\\/|' + GUION + ')\\s?(\\d{4}|\\d{2})|\\s+del?\\s+(\\d{4}))?(?![\\d' + L + '])', 'g');
+  // Antes de una letra suelta, estas palabras indican un acto administrativo o una norma, no una sentencia
+  var RE_ACTO = /(?:circular(?:es)?|resoluci[oó]n(?:es)?|decretos?|acuerdos?|leyes|ley|oficios?|memorandos?|conceptos?|directivas?|instrucci[oó]n|art[ií]culos?|art\.|numeral|literal|n[uú]mero)\s*$/i;
+  // Una inicial justo antes («D.C. 5 de 2020»)
+  var RE_INICIAL = /(?:^|[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ])[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]\.\s*$/;
   var RE_PALABRA = /(?:sentencias?|autos?|fallos?|providencias?)(?:\s+de\s+(?:tutela|unificación|constitucionalidad))?\s*$/i;
 
   function pad(n, k) { n = String(n); while (n.length < k) n = '0' + n; return n; }
@@ -107,8 +113,9 @@
   }
 
   // ── Corte Suprema de Justicia ─────────────────────────────────────────────────────
-  function citaCSJ(pref, numTxt, anioTxt, hoyAnio) {
+  function citaCSJ(pref, numTxt, anioTxt, hoyAnio, conGuion) {
     var n = +numTxt, problemas = [], anio;
+    if (conGuion) problemas.push(problema('aviso', 'Formato raro: la Corte Suprema no pone guion entre el prefijo y el número (' + pref + n + '-' + (anioTxt.length === 2 ? 2000 + +anioTxt : anioTxt) + ').'));
     if (anioTxt.length === 2) {
       anio = 2000 + +anioTxt;
       problemas.push(problema('aviso', 'Formato raro: la Corte Suprema escribe el año con cuatro cifras (' + pref + n + '-' + anio + ').'));
@@ -146,7 +153,11 @@
     var out = [], m;
     re.lastIndex = 0;
     while ((m = re.exec(texto)) !== null) {
-      var r = fn(m);
+      // El primer grupo es el carácter de antes (o el inicio): se quita para que la cita empiece en su letra
+      var pre = m[1] || '';
+      var a = [m[0].slice(pre.length)].concat(Array.prototype.slice.call(m, 2));
+      a.index = m.index + pre.length;
+      var r = fn(a);
       if (r) out.push(r);
       if (m[0].length === 0) re.lastIndex++;
     }
@@ -159,7 +170,7 @@
     var cand = [];
 
     cand = cand.concat(todas(RE_CSJ, texto, function (m) {
-      return { inicio: m.index, fin: m.index + m[0].length, prioridad: 3, cita: citaCSJ(m[1], m[2], m[3], hoyAnio) };
+      return { inicio: m.index, fin: m.index + m[0].length, prioridad: 3, cita: citaCSJ(m[1], m[3], m[4], hoyAnio, !!(m[2] && /\S/.test(m[2]))) };
     }));
     cand = cand.concat(todas(RE_AUTO, texto, function (m) {
       return { inicio: m.index, fin: m.index + m[0].length, prioridad: 2, cita: citaCC('A', m[2], m[3] || m[4] || m[5], hoyAnio) };
@@ -172,6 +183,10 @@
       if (!anioTxt && !conPalabra) return null;
       // «A 15 de 2020» suelto no es una cita: con espacio y sin «Sentencia» o «Auto» antes, solo T, C o SU
       if (sep && /^\s$/.test(sep) && !conPalabra && tipo === 'A') return null;
+      // «Circular C 15 de 2020» o «Decreto C-3 de 2020» no son sentencias
+      if (!conPalabra && RE_ACTO.test(previo)) return null;
+      // «Bogotá D.C. 5 de 2020»: con espacio o punto, la letra no puede venir justo después de una inicial
+      if (sep && /^[\s.]/.test(sep) && !conPalabra && RE_INICIAL.test(previo)) return null;
       return { inicio: m.index, fin: m.index + m[0].length, prioridad: 1, cita: citaCC(tipo, numTxt, anioTxt, hoyAnio) };
     }));
     cand = cand.concat(todas(RE_OTRO, texto, function (m) {

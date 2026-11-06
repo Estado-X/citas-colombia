@@ -114,7 +114,11 @@ const raras = [
   ['SL1234-23', /cuatro cifras/, CSJ + '%22SL1234-2023%22/Laboral'],
   ['SL01234-2023', /ceros a la izquierda/, CSJ + '%22SL1234-2023%22/Laboral'],
   ['SC1234-2013', /solo la Sala Laboral/, CSJ + '%22SC1234-2013%22/Civil'],
-  ['A-3500/24', /muy alto/, CC + 'autos/2024/A3500-24.htm']
+  ['A-3500/24', /muy alto/, CC + 'autos/2024/A3500-24.htm'],
+  ['SP-1234-2020', /no pone guion/, CSJ + '%22SP1234-2020%22/Penal'],
+  ['SL-5678-2019', /no pone guion/, CSJ + '%22SL5678-2019%22/Laboral'],
+  ['STC-100-2020', /no pone guion/, CSJ + '%22STC100-2020%22/Tutelas'],
+  ['AC – 1234-2023', /no pone guion/, CSJ + '%22AC1234-2023%22/Civil']
 ];
 raras.forEach(([texto, motivo, url]) => {
   test('Revísala (formato raro): ' + texto, () => {
@@ -136,7 +140,11 @@ const sinCitas = [
   'El T-Rex mide 12 metros y el C3PO es un robot.',
   'Llámame al 300 123 4567 o escribe a T. Pérez.',
   'La resolución DIAN 000165 de 2023 trata la factura electrónica.',
-  'La talla es S, M o L; el modelo SU-V de Toyota.'
+  'La talla es S, M o L; el modelo SU-V de Toyota.',
+  'Según la Circular C 15 de 2020 de la Superintendencia.',
+  'Expedido en Bogotá D.C. 5 de 2020.',
+  'El Decreto C-3 de 2020 y la Resolución T 45 de 2019.',
+  'Firmado por J. C. 12 de 2021.'
 ];
 sinCitas.forEach((texto) => {
   test('Sin citas: ' + JSON.stringify(texto).slice(0, 50), () => {
@@ -162,6 +170,20 @@ test('un escrito con varias citas: una fila por providencia y todas las aparicio
 test('«STC» no se lee como una C de la Corte Constitucional', () => {
   const r = buscar('STC1234-2023 y AC1234-2023');
   assert.deepStrictEqual(r.citas.map((c) => c.corte), ['csj', 'csj']);
+});
+
+test('con «Sentencia» antes, la C con espacio o punto sí cuenta', () => {
+  assert.strictEqual(una('Sentencia C. 355 de 2006').etiqueta, 'C-355 de 2006');
+  assert.strictEqual(una('Sentencia C 355 de 2006').etiqueta, 'C-355 de 2006');
+});
+
+test('el código no usa «lookbehind» (Safari anterior a 16.4 no lo entiende)', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  ['citas.js', 'app.js'].forEach((f) => {
+    const src = fs.readFileSync(path.join(__dirname, '..', 'assets', f), 'utf8');
+    assert.ok(!/\(\?<[!=]/.test(src), f + ' usa lookbehind');
+  });
 });
 
 test('lista para copiar: enlaces, avisos, fecha dd/mm/aaaa y casillas', () => {
