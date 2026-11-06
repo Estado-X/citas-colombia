@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Abre cada sentencia que cita tu escrito · Estado X</title>
+<meta name="description" content="Pega un escrito y encuentra las citas de la Corte Constitucional y de la Corte Suprema de Justicia, con el enlace a la relatoría oficial de cada una y las que están mal escritas o no pueden existir.">
+<meta property="og:title" content="Antes de radicar, abre cada sentencia">
+<meta property="og:description" content="Encuentra las citas de la Corte Constitucional y la Corte Suprema en tu escrito, con su enlace oficial, y marca las sospechosas.">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/estilos.css">
+</head>
+<body>
+<header class="banda">
+  <div class="contenedor banda__in">
+    <p class="kicker">Herramienta abierta · Estado X</p>
+    <h1>Antes de radicar, abre <em>cada sentencia</em></h1>
+    <p class="banda__sub">Pega un escrito, el tuyo o el que te entregó una IA. La página encuentra las citas de la Corte Constitucional y de la Corte Suprema de Justicia, te da el enlace a la relatoría oficial de cada una y marca las que están mal escritas o no pueden existir.</p>
+  </div>
+</header>
+
+<main class="contenedor">
+  <section class="bloque" aria-labelledby="t-pega">
+    <div class="tarjeta">
+      <h2 id="t-pega"><span class="paso">1</span> Pega tu escrito</h2>
+      <label class="etq" for="texto">Texto con citas de jurisprudencia</label>
+      <textarea id="texto" rows="9" spellcheck="false" placeholder="Pega aquí la demanda, la tutela, el concepto o la respuesta de tu IA. Por ejemplo: «… como lo reiteró la Sentencia T-406 de 1992 y la SL1234-2023 …»"></textarea>
+      <div class="acciones">
+        <button type="button" class="boton boton--claro" id="ejemplo">Probar con un ejemplo</button>
+        <button type="button" class="boton boton--claro" id="borrar">Borrar el texto</button>
+      </div>
+      <p class="nota">Todo pasa en tu navegador: el texto no se envía a ningún lado y se borra al cerrar la página.</p>
+    </div>
+  </section>
+
+  <section class="bloque" aria-labelledby="t-citas">
+    <h2 id="t-citas"><span class="paso">2</span> Las citas</h2>
+    <ul class="resumen" id="resumen" aria-live="polite"></ul>
+    <div class="resultado">
+      <div class="tarjeta">
+        <h3>Tu texto, con las citas resaltadas</h3>
+        <pre class="texto-marcado" id="marcado" tabindex="0" aria-label="Tu texto con las citas resaltadas"></pre>
+      </div>
+      <div class="tarjeta">
+        <h3>Ábrelas una por una</h3>
+        <p class="ayuda">Marca cada una cuando la abras y confirmes que existe y dice lo que tu escrito afirma.</p>
+        <ol class="citas" id="citas"></ol>
+        <p class="vacio" id="vacio">Todavía no hay citas. Pega un texto o prueba con el ejemplo.</p>
+        <div class="acciones">
+          <button type="button" class="boton" id="copiar" disabled>Copiar la lista</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bloque" aria-labelledby="t-leer">
+    <h2 id="t-leer"><span class="paso">3</span> Cómo leer el resultado</h2>
+    <div class="claves">
+      <div class="tarjeta clave">
+        <h3>Formato correcto</h3>
+        <p>La cita está bien escrita y puede existir. <strong>Eso no prueba que exista:</strong> ábrela. Si el enlace de la Corte Constitucional muestra «Página No Encontrada», esa providencia no está en la relatoría.</p>
+      </div>
+      <div class="tarjeta clave clave--revisar">
+        <h3>Revísala</h3>
+        <p>Está escrita de una forma rara (año con dos cifras en la Corte Suprema, ceros de más, un número muy alto). Tiene enlace, pero confirma la cita en la fuente.</p>
+      </div>
+      <div class="tarjeta clave clave--sospechosa">
+        <h3>Sospechosa</h3>
+        <p>No puede existir así: año imposible, número fuera de rango, un tipo de providencia que no existe o una SU antes de 1993. No tiene enlace. Así suelen verse las citas inventadas.</p>
+      </div>
+    </div>
+    <div class="dos dos--sep">
+      <div class="tarjeta">
+        <h3>Por qué la página no comprueba sola que existen</h3>
+        <ul class="reglas">
+          <li>Los navegadores no dejan que una página lea otros sitios, como las relatorías de las cortes. Por eso esta página no puede abrir la sentencia por ti: <strong>la abres tú</strong>, con el enlace.</li>
+          <li><strong>Un enlace que no abre la providencia puede significar una cita inventada.</strong> Las IA a veces escriben citas con apariencia real que no existen.</li>
+          <li>Que la sentencia exista no basta: léela y confirma que dice lo que tu escrito afirma.</li>
+        </ul>
+      </div>
+      <div class="tarjeta">
+        <h3>Corte Constitucional y Corte Suprema</h3>
+        <ul class="reglas">
+          <li><strong>Corte Constitucional:</strong> el enlace abre la sentencia o el auto en su relatoría.</li>
+          <li><strong>Corte Suprema de Justicia:</strong> su relatoría no tiene una dirección fija por providencia. El enlace abre su buscador oficial con el identificador entre comillas: mira que el <strong>primer resultado tenga ese nombre</strong>, porque también salen providencias que solo lo mencionan. «No se encontraron resultados» es mala señal.</li>
+          <li>¿Buscas el artículo de una ley o un decreto? Usa <a href="https://estado-x.github.io/normas-colombia/" target="_blank" rel="noopener">Normas de Colombia</a>.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="bloque">
+    <div class="tarjeta abogados">
+      <div>
+        <h2>¿Eres abogado o abogada?</h2>
+        <p class="ayuda">Usar IA en un despacho exige revisar cada fuente. En IA para Abogados de Estado X aprendes a trabajar con IA sin perder el control de lo que firmas, y a armar tus propias herramientas.</p>
+      </div>
+      <a class="boton" href="https://estadox.com/abogados" target="_blank" rel="noopener">Conoce IA para Abogados</a>
+    </div>
+  </section>
+
+  <section class="bloque" aria-labelledby="t-formas">
+    <div class="tarjeta">
+      <h2 id="t-formas">Qué citas reconoce</h2>
+      <div class="tabla-scroll">
+        <table>
+          <thead><tr><th scope="col">Corte</th><th scope="col">Providencia</th><th scope="col">Cómo la puedes escribir</th><th scope="col">Enlace</th></tr></thead>
+          <tbody>
+            <tr><td>Corte Constitucional</td><td>Sentencias de tutela (T), de constitucionalidad (C) y de unificación (SU)</td><td><code>T-406 de 1992</code>, <code>Sentencia T-406/92</code>, <code>T406-92</code>, <code>C-355/06</code>, <code>SU-214 de 2016</code>, <code>SU.067/93</code>, con o sin guion y espacios</td><td>Directo a la relatoría</td></tr>
+            <tr><td>Corte Constitucional</td><td>Autos</td><td><code>Auto 004 de 2009</code>, <code>A-004/09</code>, <code>Auto No. 004/09</code></td><td>Directo a la relatoría</td></tr>
+            <tr><td>Corte Suprema de Justicia</td><td>Salas de Casación Civil, Laboral y Penal y tutelas</td><td><code>SC</code>, <code>AC</code>, <code>SL</code>, <code>AL</code>, <code>SP</code>, <code>AP</code>, <code>STC</code>, <code>STL</code>, <code>STP</code>, <code>ATC</code>, <code>ATL</code>, <code>ATP</code> + número + año: <code>SL1234-2023</code>, <code>STC10753-2025</code></td><td>Búsqueda oficial con el identificador</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="bloque dos">
+    <div class="tarjeta">
+      <h2>Qué revisa</h2>
+      <ul class="reglas">
+        <li><strong>Año:</strong> la Corte Constitucional dicta sentencias desde 1992 y sentencias SU desde 1993 (la primera es la SU-067 de 1993). La Corte Suprema usa identificadores como <code>SL1234-2023</code> desde 2013 en la Sala Laboral y desde 2014 en las demás. Un año que todavía no llega es imposible.</li>
+        <li><strong>Número:</strong> en la Corte Constitucional, la numeración de un año no ha pasado de unas 1.750 sentencias. En la Corte Suprema no hay números de más de cinco cifras ni ceros a la izquierda.</li>
+        <li><strong>Tipo:</strong> «Sentencia CU-123» o «Sentencia SV-12» no existen.</li>
+        <li><strong>Datos completos:</strong> «Sentencia T-406» sin año no se puede ubicar.</li>
+      </ul>
+    </div>
+    <div class="tarjeta">
+      <h2>Límites</h2>
+      <ul class="reglas">
+        <li>No comprueba que la sentencia exista ni que diga lo que se cita. Lo comprueba quien abre el enlace.</li>
+        <li>Solo reconoce la Corte Constitucional y la Corte Suprema de Justicia. No reconoce el Consejo de Estado, los tribunales, las citas por radicado y fecha («CSJ, 12 de mayo de 2010, rad. 12345») ni las salas especiales.</li>
+        <li>«Auto 004 de 2009», sin letras, se lee como auto de la Corte Constitucional.</li>
+        <li>Lee las citas en mayúscula (<code>T-406</code>, no <code>t-406</code>), para no confundirlas con otras palabras.</li>
+        <li>Los enlaces dependen de cómo publican las cortes sus relatorías; si cambian, un enlace puede dejar de abrir aunque la cita sea real.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer class="pie">
+  <div class="contenedor pie__in">
+    <p>Todo pasa en tu navegador: lo que pegas no se envía a ningún lado.</p>
+    <p>Inspirada en <a href="https://github.com/freelawproject/eyecite" target="_blank" rel="noopener">eyecite</a>, de Free Law Project (licencia BSD-2-Clause). Código abierto en <a href="https://github.com/Estado-X/citas-colombia" target="_blank" rel="noopener">GitHub</a>.</p>
+    <p class="firma">Hecho por <a href="https://estadox.com" target="_blank" rel="noopener">Estado <em>X</em></a></p>
+  </div>
+</footer>
+<script src="assets/citas.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
